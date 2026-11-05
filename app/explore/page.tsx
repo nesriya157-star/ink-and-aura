@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import BottomNav from "@/components/BottomNav";
 import { listPublic } from "@/lib/notes";
 
 export const dynamic = "force-dynamic";
@@ -16,7 +17,7 @@ export default async function Explore() {
             Ink <span>&amp;</span> Aura
           </div>
         </Link>
-        <div className="top-actions">
+        <div className="top-actions desktop-only">
           <Link className="primary" href="/" style={{ textDecoration: "none" }}>
             Your writing room
           </Link>
@@ -55,6 +56,7 @@ export default async function Explore() {
         </div>
       </main>
       <footer>Made of moonlight, imagination, and words. &nbsp;✦</footer>
+      <BottomNav active="explore" />
     </>
   );
 }

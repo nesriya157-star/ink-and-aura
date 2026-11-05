@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   description: "A gentle place to gather your poems, stories, quotes, and little thoughts.",
 };
 
-export const viewport: Viewport = { themeColor: "#f7f0e8" };
+export const viewport: Viewport = { themeColor: "#f7f0e8", width: "device-width", initialScale: 1, viewportFit: "cover" };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (

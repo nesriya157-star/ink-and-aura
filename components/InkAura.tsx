@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import BottomNav from "./BottomNav";
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { TYPES, type Note, type User, type Visibility } from "@/lib/types";
 
@@ -44,6 +45,7 @@ export default function InkAura({ initialUser, initialNotes }: { initialUser: Us
   const [promptIndex, setPromptIndex] = useState(0);
   const [editorOpen, setEditorOpen] = useState(false);
   const [aboutOpen, setAboutOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
   const [authMode, setAuthMode] = useState<"login" | "register" | null>(null);
   const [authForm, setAuthForm] = useState({ name: "", email: "", password: "" });
   const [authError, setAuthError] = useState("");
@@ -64,11 +66,24 @@ export default function InkAura({ initialUser, initialNotes }: { initialUser: Us
       if (e.key === "Escape") {
         setEditorOpen(false);
         setAboutOpen(false);
+        setProfileOpen(false);
         setAuthMode(null);
       }
     };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
+  }, []);
+
+  useEffect(() => {
+    const q = new URLSearchParams(window.location.search);
+    if (!q.has("write") && !q.has("me")) return;
+    window.history.replaceState(null, "", "/");
+    if (q.has("write")) {
+      if (initialUser) setEditorOpen(true);
+      else setAuthMode("register");
+    } else if (initialUser) setProfileOpen(true);
+    else setAuthMode("login");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -100,6 +115,8 @@ export default function InkAura({ initialUser, initialNotes }: { initialUser: Us
     setEditorOpen(false);
     setEditingId(null);
   };
+
+  const openProfile = () => (user ? setProfileOpen(true) : openAuth("login"));
 
   const openAuth = (mode: "login" | "register") => {
     setAuthError("");
@@ -199,7 +216,7 @@ export default function InkAura({ initialUser, initialNotes }: { initialUser: Us
             Ink <span>&amp;</span> Aura
           </div>
         </a>
-        <div className="top-actions">
+        <div className="top-actions desktop-only">
           <Link className="quiet-btn" href="/explore" style={{ textDecoration: "none" }}>
             Explore
           </Link>
@@ -234,7 +251,7 @@ export default function InkAura({ initialUser, initialNotes }: { initialUser: Us
               A gentle place to gather your poems, stories, quotes, and little thoughts. Keep a piece just for yourself, or choose
               to share it with the world.
             </p>
-            <button className="primary" onClick={() => openEditor()}>
+            <button className="primary desktop-only" onClick={() => openEditor()}>
               Begin writing&nbsp; ↗
             </button>
           </div>
@@ -252,7 +269,7 @@ export default function InkAura({ initialUser, initialNotes }: { initialUser: Us
               <h2>Your writing room</h2>
               <div className="sub">Every idea deserves a little space.</div>
             </div>
-            <button className="outline" onClick={() => openEditor()}>
+            <button className="outline desktop-only" onClick={() => openEditor()}>
               ＋ Create
             </button>
           </div>
@@ -342,6 +359,51 @@ export default function InkAura({ initialUser, initialNotes }: { initialUser: Us
       </main>
 
       <footer>Made of moonlight, imagination, and words. &nbsp;✦</footer>
+
+      <BottomNav active={profileOpen ? "profile" : "home"} onWrite={() => openEditor()} onProfile={openProfile} />
+
+      <div
+        className={`modal-backdrop${profileOpen ? " show" : ""}`}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Profile"
+        onClick={(e) => e.target === e.currentTarget && setProfileOpen(false)}
+      >
+        <div className="modal">
+          <div className="modal-head">
+            <h2>{user?.name ?? "Profile"}</h2>
+            <button className="close" onClick={() => setProfileOpen(false)} aria-label="Close">
+              ×
+            </button>
+          </div>
+          <p className="helper" style={{ fontSize: 13, marginTop: 0 }}>
+            {user?.email}
+          </p>
+          <div className="sheet-list">
+            <div className="sheet-stat">
+              <strong>{notes.length}</strong> pieces · <strong>{notes.filter((n) => n.visibility === "Public").length}</strong> public
+            </div>
+            <button
+              className="sheet-row"
+              onClick={() => {
+                setProfileOpen(false);
+                setAboutOpen(true);
+              }}
+            >
+              Our little space
+            </button>
+            <button
+              className="sheet-row danger"
+              onClick={() => {
+                setProfileOpen(false);
+                logout();
+              }}
+            >
+              Sign out
+            </button>
+          </div>
+        </div>
+      </div>
 
       <div
         className={`modal-backdrop${editorOpen ? " show" : ""}`}
